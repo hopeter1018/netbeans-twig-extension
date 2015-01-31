@@ -152,28 +152,24 @@ final public class CodeCompleterUtils {
     }
 
     public static Map<String, PhpClassFile> getAllPhpWithAnnotations(Project editingProject, String... toFindAnnotations) {
-        FileObject editingDir = editingProject.getProjectDirectory().getFileObject("wcms/workbench");
         Map<String, PhpClassFile> result = new HashMap<String, PhpClassFile>();
+        List<FileObject> phpFiles = ProjectUtils.findByMimeType(editingProject, "text/x-php5");
 
-        if (editingDir != null && editingDir.isFolder()) {
-            List<FileObject> phpFiles = FileSystemUtils.findByMimeType(editingDir, "text/x-php5");
+        Set<String> annoSet = new java.util.HashSet<String>();
+        annoSet.addAll(Arrays.asList(toFindAnnotations));
 
-            Set<String> annoSet = new java.util.HashSet<String>();
-            annoSet.addAll(Arrays.asList(toFindAnnotations));
-
-            EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
-            for (FileObject phpFile : phpFiles) {
-                try {
-                    Map<OffsetRange, String> newResult = AnnotationUtils.extractInlineAnnotations(phpFile.asText(), annoSet);
-                    if (!newResult.isEmpty()) {
-                        Collection<PhpClass> classes = editorSupport.getClasses(phpFile);
-                        for (PhpClass phpClass : classes) {
-                            result.put(phpClass.getName(), new PhpClassFile(phpClass.getName(), phpClass, phpFile));
-                        }
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        for (FileObject phpFile : phpFiles) {
+            try {
+                Map<OffsetRange, String> newResult = AnnotationUtils.extractInlineAnnotations(phpFile.asText(), annoSet);
+                if (!newResult.isEmpty()) {
+                    Collection<PhpClass> classes = editorSupport.getClasses(phpFile);
+                    for (PhpClass phpClass : classes) {
+                        result.put(phpClass.getName(), new PhpClassFile(phpClass.getName(), phpClass, phpFile));
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return result;

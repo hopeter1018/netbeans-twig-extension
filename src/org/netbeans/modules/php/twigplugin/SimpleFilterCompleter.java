@@ -30,6 +30,7 @@ import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
 import org.netbeans.modules.php.twigplugin.Utils.FileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
+import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
 
 /**
  *
@@ -48,7 +49,8 @@ public class SimpleFilterCompleter implements CompletionProvider {
                         + "[^\'\"]*"
                         + "\\)");
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllTwigSimpleFilter(Project editingProject) {
-        FileObject editingDir = editingProject.getProjectDirectory().getFileObject("");
+        FileObject editingDir = editingProject.getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir());
+        //  .getFileObject("");
         List<FileObject> phpFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_PHP);
         Map<String, CodeCompleterUtils.OptionsItem> result = new HashMap<String, CodeCompleterUtils.OptionsItem>();
 

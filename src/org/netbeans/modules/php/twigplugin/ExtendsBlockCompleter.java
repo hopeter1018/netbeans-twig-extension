@@ -29,6 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
 import org.netbeans.modules.php.twigplugin.Utils.FileSystemUtils;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
+import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -45,7 +46,8 @@ public class ExtendsBlockCompleter implements CompletionProvider {
     final static Pattern blockCommentPattern = Pattern.compile("(?<comments>\\{\\#(.*)\\#\\})*(\\s*)\\{\\%[ ]+block[ ]+(?<name>[a-zA-Z0-9\\.]+)[ ]+\\%\\}");
 
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllBlockInMaster(Document document, Project editingProject) {
-        FileObject editingDir = editingProject.getProjectDirectory().getFileObject("");
+        FileObject editingDir = editingProject.getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir());
+        //  .getFileObject("");
         List<FileObject> twigFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_TWIG);
         Map<String, CodeCompleterUtils.OptionsItem> result = new HashMap<String, CodeCompleterUtils.OptionsItem>();
 

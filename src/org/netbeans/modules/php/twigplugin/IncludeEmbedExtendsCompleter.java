@@ -28,6 +28,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
 import org.netbeans.modules.php.twigplugin.Utils.FileSystemUtils;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
+import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -43,8 +44,9 @@ public class IncludeEmbedExtendsCompleter implements CompletionProvider {
     final static Pattern commentPattern = Pattern.compile("\\{\\#(.*)\\#\\}");
 
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllTwigSimpleFilter(Project editingProject) {
-        FileObject editingDir = editingProject.getProjectDirectory().getFileObject("");
-        List<FileObject> twigFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_TWIG);
+        List<FileObject> twigFiles = ProjectUtils.findByMimeType(editingProject, CommonConstants.NB_MIME_TWIG);
+        List<FileObject> editingDirs = ProjectUtils.getEditingPaths(editingProject);
+
         Map<String, CodeCompleterUtils.OptionsItem> result = new HashMap<String, CodeCompleterUtils.OptionsItem>();
 
         for (FileObject twigFile : twigFiles) {
@@ -52,7 +54,10 @@ public class IncludeEmbedExtendsCompleter implements CompletionProvider {
             try {
                 text = twigFile.asText();
                 Matcher matcher = commentPattern.matcher(text);
-                String name = twigFile.getPath().replace(editingDir.getPath(), "").replace(".twig", "").substring(1);
+                String name = twigFile.getPath().replace(".twig", "").substring(1);
+                for (FileObject editingDir : editingDirs) {
+                    name = name.replace(editingDir.getPath(), "");
+                }
                 String comments = "-- No comments found in the " + name + ".twig --";
                 if (matcher.find()) {
                     comments = matcher.group(1);

@@ -27,7 +27,9 @@ public class HyperlinkProviderUtils {
 
     public static String getTwigCommonFile(String twigName) {
         if (twigName != null && twigName.trim().length() > 0) {
-            FileObject editingDir = getEditingProject().getProjectDirectory().getFileObject("");
+            FileObject editingDir = getEditingProject().getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir());
+            
+            //  .getFileObject("");
             List<FileObject> twigFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_TWIG);
             for (FileObject twigFile : twigFiles) {
                 if (twigFile.getPath().endsWith(twigName)) {
