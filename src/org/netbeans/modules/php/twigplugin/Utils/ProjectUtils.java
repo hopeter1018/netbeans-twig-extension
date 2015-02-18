@@ -51,12 +51,17 @@ public class ProjectUtils {
 
     public static String getProjectWorkbenchDir()
     {
-        return getComposerJsonProperty("config", "vendor-dir").replace("/vendor", "");
+        return getComposerJsonProperty("config", "vendor-dir").replace("/vendor", "/workbench");
     }
 
     public static String getMyVendorDir()
     {
         return getComposerJsonProperty("config", "vendor-dir") + "/hopeter1018";
+    }
+
+    public static String getZmsVendorDir()
+    {
+        return getComposerJsonProperty("config", "vendor-dir") + "/zms5";
     }
 
     public static List<FileObject> findByMimeType(Project editingProject, String mime)
@@ -74,6 +79,7 @@ public class ProjectUtils {
         List<FileObject> result = new ArrayList();
         result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir()));
         result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getMyVendorDir()));
+        result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getZmsVendorDir()));
         return result;
     }
 

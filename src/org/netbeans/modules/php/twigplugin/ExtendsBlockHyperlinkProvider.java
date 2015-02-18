@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
-import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -24,7 +23,6 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.php.twigplugin.Utils.HyperlinkProviderUtils;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
-import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -43,7 +41,7 @@ public class ExtendsBlockHyperlinkProvider implements HyperlinkProviderExt {
 
     private int startOffset, endOffset;
     private String blockName;
-    final static Pattern blockPattern = Pattern.compile("(?<type>block)(?<spaces> +)(?<blockname>.*)");
+    final static Pattern blockPattern = Pattern.compile("(?<type>(end)block)(?<spaces> +)(?<blockname>.*)");
     final static Pattern extendsNamePattern = Pattern.compile("\\{%( +)extends( +)\\\"(?<extendsname>[^\\\"]+)\\\"( +)%\\}");
 
     @Override

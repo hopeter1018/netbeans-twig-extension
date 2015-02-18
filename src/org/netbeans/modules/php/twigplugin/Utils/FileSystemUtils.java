@@ -19,17 +19,17 @@ import org.openide.filesystems.FileObject;
 public class FileSystemUtils {
 
     public static List<FileObject> findByMimeType(FileObject root, String mime) {
-        if (root == null || !root.isFolder()) {
-            throw new IllegalArgumentException("Not a folder");
-        }
         List<FileObject> result = new ArrayList<FileObject>();
-        Enumeration<? extends FileObject> children = root.getChildren(true);
-        while (children.hasMoreElements()) {
-            FileObject file = children.nextElement();
-            if (mime.equals(file.getMIMEType())) {
-                result.add(file);
+        if (root != null && root.isFolder()) {
+            Enumeration<? extends FileObject> children = root.getChildren(true);
+            while (children.hasMoreElements()) {
+                FileObject file = children.nextElement();
+                if (mime.equals(file.getMIMEType())) {
+                    result.add(file);
+                }
             }
         }
+
         return result;
     }
 
