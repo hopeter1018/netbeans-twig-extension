@@ -54,12 +54,12 @@ public class ProjectUtils {
         return getComposerJsonProperty("config", "vendor-dir").replace("/vendor", "/workbench");
     }
 
-    public static String getMyVendorDir()
+    public static String getVendorMyDir()
     {
         return getComposerJsonProperty("config", "vendor-dir") + "/hopeter1018";
     }
 
-    public static String getZmsVendorDir()
+    public static String getVendorZmsDir()
     {
         return getComposerJsonProperty("config", "vendor-dir") + "/zms5";
     }
@@ -78,8 +78,12 @@ public class ProjectUtils {
     {
         List<FileObject> result = new ArrayList();
         result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir()));
-        result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getMyVendorDir()));
-        result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getZmsVendorDir()));
+        if (editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorMyDir()) != null) {
+            result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorMyDir()));
+        }
+        if (editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorZmsDir()) != null) {
+            result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorZmsDir()));
+        }
         return result;
     }
 

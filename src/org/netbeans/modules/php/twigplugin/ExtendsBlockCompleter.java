@@ -14,7 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -42,7 +41,7 @@ import org.openide.filesystems.FileObject;
 })
 public class ExtendsBlockCompleter implements CompletionProvider {
 
-    final static Pattern haveExtendsPattern = Pattern.compile("\\{\\%[ ]+extends[ ]+\"(?<fileName>[a-zA-Z0-9\\.]+)\"[ ]+\\%\\}");
+    final static Pattern haveExtendsPattern = Pattern.compile("\\{\\%[ ]+extends[ ]+\"(?<fileName>[^\"]+)\"[ ]+\\%\\}");
     final static Pattern blockCommentPattern = Pattern.compile("(?<comments>\\{\\#(.*)\\#\\})*(\\s*)\\{\\%[ ]+block[ ]+(?<name>[a-zA-Z0-9\\.]+)[ ]+\\%\\}");
 
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllBlockInMaster(Document document, Project editingProject) {
@@ -57,25 +56,34 @@ public class ExtendsBlockCompleter implements CompletionProvider {
             if (haveExtendsMatcher.find()) {
                 fileName = haveExtendsMatcher.group("fileName");
             }
+//System.out.println("");
+//System.out.println("");
+//System.out.println("#####  START ################################################################");
+//System.out.println("-- My Twig Helper fileName: " + fileName);
             if (fileName != null) {
                 for (FileObject twigFile : twigFiles) {
-                    if (twigFile.getNameExt().equals(fileName)) {
+//System.out.println("-- My Twig Helper twigFile.getPath(): " + twigFile.getPath());
+                    if (twigFile.getPath().endsWith(fileName)) {
                         String text;
                         text = twigFile.asText();
                         Matcher matcher = blockCommentPattern.matcher(text);
                         while (matcher.find()) {
                             String name = matcher.group("name");
                             String comments = matcher.group("comments");
+//System.out.println("-- My Twig Helper name-comments: " + name + " - " + comments);
                             if (comments == null || comments.trim().equals("")) {
                                 comments = "-- No comments found for the block --";
                             } else {
-                                comments = comments.substring(3);
+                                comments = comments.substring(3, comments.length() - 3);
                             }
                             result.put(name, new CodeCompleterUtils.OptionsItem(name, comments + CodeCompleterUtils.getFileObjectInfo(twigFile)));
                         }
                     }
                 }
             }
+//System.out.println("#####  END ################################################################");
+//System.out.println("");
+//System.out.println("");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (BadLocationException ex) {

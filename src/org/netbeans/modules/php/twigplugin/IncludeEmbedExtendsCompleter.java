@@ -26,7 +26,6 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
-import org.netbeans.modules.php.twigplugin.Utils.FileSystemUtils;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
 import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
 import org.openide.filesystems.FileObject;
@@ -54,9 +53,12 @@ public class IncludeEmbedExtendsCompleter implements CompletionProvider {
             try {
                 text = twigFile.asText();
                 Matcher matcher = commentPattern.matcher(text);
-                String name = twigFile.getPath().replace(".twig", "").substring(1);
+                String name = twigFile.getPath().replace(".twig", "");
+
                 for (FileObject editingDir : editingDirs) {
-                    name = name.replace(editingDir.getPath(), "");
+                    if (editingDir != null) {
+                        name = name.replace(editingDir.getPath(), "");
+                    }
                 }
                 String comments = "-- No comments found in the " + name + ".twig --";
                 if (matcher.find()) {
