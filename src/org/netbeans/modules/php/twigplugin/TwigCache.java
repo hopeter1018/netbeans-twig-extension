@@ -30,9 +30,14 @@ public class TwigCache {
     private final Map<String, List<FileObject>> cachedPhp = new HashMap<String, List<FileObject>>();
     private final Map<String, List<FileObject>> cachedTwig = new HashMap<String, List<FileObject>>();
 
+    private static final Map<String, TwigCacheAttributeChecker> phpAttr = new HashMap<String, TwigCacheAttributeChecker>();
+    private static final Map<String, TwigCacheAttributeChecker> twigAttr = new HashMap<String, TwigCacheAttributeChecker>();
+
     private static boolean inited = false;
     public TwigCache() {
+StatusDisplayer.getDefault().setStatusText("using TwigCacheAttributeChecker");
         if (inited == false) {
+StatusDisplayer.getDefault().setStatusText("using TwigCacheAttributeChecker inited = false");
             inited = true;
             FileUtil.addFileChangeListener(new UpdateCacheWhenFileChangedListener());
 
@@ -41,7 +46,6 @@ public class TwigCache {
             cachedPhp.put(info.getName(), readProjectPhpFromFiles(editingProject));
             cachedTwig.put(info.getName(), readProjectTwigFromFiles(editingProject));
         }
-StatusDisplayer.getDefault().setStatusText("using TwigCache");
     }
 
     private class UpdateCacheWhenFileChangedListener extends FileChangeAdapter {
@@ -58,10 +62,57 @@ StatusDisplayer.getDefault().setStatusText("using TwigCache");
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            updateCache(fe);
+            FileObject file = fe.getFile();
+            boolean isPhp = CommonConstants.NB_MIME_PHP.equals(file.getMIMEType());
+            boolean isTwig = CommonConstants.NB_MIME_TWIG.equals(file.getMIMEType());
+            if (isPhp) {
+                for (TwigCacheAttributeChecker value : phpAttr.values()) {
+                    if (value.result.contains(file)) {
+                        value.result.remove(file);
+                    }
+                }
+            } else if (isTwig) {
+                for (TwigCacheAttributeChecker value : twigAttr.values()) {
+                    if (value.result.contains(file)) {
+                        value.result.remove(file);
+                    }
+                }
+            }
         }
 
         private void updateCache(FileEvent fe) {
+StatusDisplayer.getDefault().setStatusText("using TwigCacheAttributeChecker updateCache");
+            FileObject file = fe.getFile();
+            boolean isPhp = CommonConstants.NB_MIME_PHP.equals(file.getMIMEType());
+            boolean isTwig = CommonConstants.NB_MIME_TWIG.equals(file.getMIMEType());
+            if (isPhp) {
+                for (TwigCacheAttributeChecker value : phpAttr.values()) {
+                    if (value.isMatched(file)) {
+                        if (! value.result.contains(file)) {
+                            value.result.add(file);
+                        }
+                    } else {
+                        if (value.result.contains(file)) {
+                            value.result.remove(file);
+                        }
+                    }
+                }
+            } else if (isTwig) {
+                for (TwigCacheAttributeChecker value : twigAttr.values()) {
+                    if (value.isMatched(file)) {
+                        if (! value.result.contains(file)) {
+                            value.result.add(file);
+                        }
+                    } else {
+                        if (value.result.contains(file)) {
+                            value.result.remove(file);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void updateCacheOriginal(FileEvent fe) {
             FileObject file = fe.getFile();
             boolean isPhp = CommonConstants.NB_MIME_PHP.equals(file.getMIMEType());
             boolean isTwig = CommonConstants.NB_MIME_TWIG.equals(file.getMIMEType());
@@ -79,6 +130,22 @@ StatusDisplayer.getDefault().setStatusText("using TwigCache");
                 cachedTwig.put(info.getName(), readProjectTwigFromFiles(project));
             }
         }
+    }
+
+    public static List<FileObject> getPhp(String attributeName, TwigCacheAttributeChecker checker) {
+        if (! phpAttr.containsKey(attributeName)) {
+            Project editingProject = HyperlinkProviderUtils.getEditingProject();
+            List<FileObject> files = readProjectPhpFromFiles(editingProject);
+            checker.result.clear();
+            for (FileObject file : files) {
+                if (checker.isMatched(file)) {
+                    checker.result.add(file);
+                }
+            }
+            phpAttr.put(attributeName, checker);
+        }
+
+        return phpAttr.get(attributeName).result;
     }
 
     public static List<FileObject> getPhp() {

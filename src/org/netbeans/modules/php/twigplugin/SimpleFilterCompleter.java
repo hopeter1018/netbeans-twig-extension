@@ -29,7 +29,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
-import org.netbeans.modules.php.twigplugin.Utils.MyProjectUtils;
 
 /**
  *
@@ -47,7 +46,21 @@ public class SimpleFilterCompleter implements CompletionProvider {
                         + "[\'\"](?<string1>[^\'\"]+)");
 
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllTwigSimpleFilter(Project editingProject) {
-        List<FileObject> phpFiles = TwigCache.getPhp();
+        List<FileObject> phpFiles = TwigCache.getPhp(
+            "twigfilter",
+            new TwigCacheAttributeChecker(){
+                @Override
+                public boolean isMatched(FileObject file) {
+                    boolean matched = false;
+                    try {
+                        matched = twigSimpleFilterPattern.matcher(file.asText()).find();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    return matched;
+                }
+            });
+//        List<FileObject> phpFiles = TwigCache.getPhp();
         Map<String, CodeCompleterUtils.OptionsItem> result = new HashMap<String, CodeCompleterUtils.OptionsItem>();
 
         for (FileObject phpFile : phpFiles) {
