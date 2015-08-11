@@ -28,7 +28,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
 import org.netbeans.modules.php.twigplugin.Utils.FileSystemUtils;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
-import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
+import org.netbeans.modules.php.twigplugin.Utils.MyProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -45,9 +45,10 @@ public class ExtendsBlockCompleter implements CompletionProvider {
     final static Pattern blockCommentPattern = Pattern.compile("(?<comments>\\{\\#(.*)\\#\\})*(\\s*)\\{\\%[ ]+block[ ]+(?<name>[a-zA-Z0-9\\.]+)[ ]+\\%\\}");
 
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllBlockInMaster(Document document, Project editingProject) {
-        FileObject editingDir = editingProject.getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir());
+//        FileObject editingDir = editingProject.getProjectDirectory().getFileObject(MyProjectUtils.getProjectWorkbenchDir());
         //  .getFileObject("");
-        List<FileObject> twigFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_TWIG);
+//        List<FileObject> twigFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_TWIG);
+        List<FileObject> twigFiles = TwigCache.getTwig();
         Map<String, CodeCompleterUtils.OptionsItem> result = new HashMap<String, CodeCompleterUtils.OptionsItem>();
 
         String fileName = null;
@@ -56,13 +57,8 @@ public class ExtendsBlockCompleter implements CompletionProvider {
             if (haveExtendsMatcher.find()) {
                 fileName = haveExtendsMatcher.group("fileName");
             }
-//System.out.println("");
-//System.out.println("");
-//System.out.println("#####  START ################################################################");
-//System.out.println("-- My Twig Helper fileName: " + fileName);
             if (fileName != null) {
                 for (FileObject twigFile : twigFiles) {
-//System.out.println("-- My Twig Helper twigFile.getPath(): " + twigFile.getPath());
                     if (twigFile.getPath().endsWith(fileName)) {
                         String text;
                         text = twigFile.asText();
@@ -70,20 +66,21 @@ public class ExtendsBlockCompleter implements CompletionProvider {
                         while (matcher.find()) {
                             String name = matcher.group("name");
                             String comments = matcher.group("comments");
-//System.out.println("-- My Twig Helper name-comments: " + name + " - " + comments);
                             if (comments == null || comments.trim().equals("")) {
                                 comments = "-- No comments found for the block --";
                             } else {
                                 comments = comments.substring(3, comments.length() - 3);
                             }
-                            result.put(name, new CodeCompleterUtils.OptionsItem(name, comments + CodeCompleterUtils.getFileObjectInfo(twigFile)));
+                            result.put(
+                                name,
+                                new CodeCompleterUtils.OptionsItem(
+                                    name,
+                                    comments + CodeCompleterUtils.getFileObjectInfo(editingProject, twigFile)
+                                ));
                         }
                     }
                 }
             }
-//System.out.println("#####  END ################################################################");
-//System.out.println("");
-//System.out.println("");
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (BadLocationException ex) {

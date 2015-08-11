@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.twigplugin.TwigCache;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -27,11 +28,12 @@ public class HyperlinkProviderUtils {
 
     public static String getTwigCommonFile(String twigName) {
         if (twigName != null && twigName.trim().length() > 0) {
-            FileObject editingDir = getEditingProject().getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir());
-            
-            //  .getFileObject("");
-            List<FileObject> twigFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_TWIG);
+//            List<FileObject> twigFiles = MyProjectUtils.findByMimeType(getEditingProject(), CommonConstants.NB_MIME_TWIG);
+            List<FileObject> twigFiles = TwigCache.getTwig();
             for (FileObject twigFile : twigFiles) {
+                if (twigFile.getPath().endsWith(twigName + ".twig")) {
+                    return twigFile.getPath();
+                }
                 if (twigFile.getPath().endsWith(twigName)) {
                     return twigFile.getPath();
                 }

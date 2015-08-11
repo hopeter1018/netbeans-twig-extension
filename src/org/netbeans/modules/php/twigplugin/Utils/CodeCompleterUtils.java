@@ -1,18 +1,13 @@
 package org.netbeans.modules.php.twigplugin.Utils;
 
 import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
@@ -22,7 +17,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.OffsetRange;
-//import org.netbeans.modules.php.zms5.UserAccessControl.AnnotationCompleter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -35,12 +29,14 @@ final public class CodeCompleterUtils {
 
     final static Pattern namespacePattern = Pattern.compile("namespace (.*);");
                 
-    public static class OptionsItem
+    public static class OptionsItem extends HashMap<String, Object>
     {
         public final String name;
         public final String template;
 
         public OptionsItem(String name, String template) {
+            super();
+
             this.name = name;
             this.template = template;
         }
@@ -94,9 +90,13 @@ final public class CodeCompleterUtils {
         }
     };
 
-    public static String getFileObjectInfo(FileObject fileObject)
+    public static String getFileObjectInfo(Project editingProject, FileObject fileObject)
     {
-        return "<hr />File Location: " + fileObject.getPath() + "<br /><a href=\"" + fileObject.getPath() + "\"></a><br />";
+        return "<hr />"
+                + "File Location: " + MyProjectUtils.getRelative(editingProject, fileObject.getPath())
+                + "<br />"
+                + "<a href=\"" + fileObject.getPath() + "\">Link</a>"
+                + "<br />";
     }
 
     public static boolean isPhpClass(Document document)
@@ -153,7 +153,7 @@ final public class CodeCompleterUtils {
 
     public static Map<String, PhpClassFile> getAllPhpWithAnnotations(Project editingProject, String... toFindAnnotations) {
         Map<String, PhpClassFile> result = new HashMap<String, PhpClassFile>();
-        List<FileObject> phpFiles = ProjectUtils.findByMimeType(editingProject, "text/x-php5");
+        List<FileObject> phpFiles = MyProjectUtils.findByMimeType(editingProject, "text/x-php5");
 
         Set<String> annoSet = new java.util.HashSet<String>();
         annoSet.addAll(Arrays.asList(toFindAnnotations));

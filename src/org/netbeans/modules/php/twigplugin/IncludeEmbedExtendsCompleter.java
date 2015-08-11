@@ -27,7 +27,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
-import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
+import org.netbeans.modules.php.twigplugin.Utils.MyProjectUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -41,10 +41,12 @@ import org.openide.filesystems.FileObject;
 public class IncludeEmbedExtendsCompleter implements CompletionProvider {
 
     final static Pattern commentPattern = Pattern.compile("\\{\\#(.*)\\#\\}");
+    final static Pattern macroPattern = Pattern.compile("\\{\\%(\\s+)macro");
+    final static Pattern extendsPattern = Pattern.compile("\\{\\%(\\s+)extends");
 
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllTwigSimpleFilter(Project editingProject) {
-        List<FileObject> twigFiles = ProjectUtils.findByMimeType(editingProject, CommonConstants.NB_MIME_TWIG);
-        List<FileObject> editingDirs = ProjectUtils.getEditingPaths(editingProject);
+        List<FileObject> twigFiles = MyProjectUtils.findByMimeType(editingProject, CommonConstants.NB_MIME_TWIG);
+        List<FileObject> editingDirs = MyProjectUtils.getEditingPaths(editingProject);
 
         Map<String, CodeCompleterUtils.OptionsItem> result = new HashMap<String, CodeCompleterUtils.OptionsItem>();
 
@@ -64,7 +66,16 @@ public class IncludeEmbedExtendsCompleter implements CompletionProvider {
                 if (matcher.find()) {
                     comments = matcher.group(1);
                 }
-                result.put(name, new CodeCompleterUtils.OptionsItem(name, comments + CodeCompleterUtils.getFileObjectInfo(twigFile)));
+                CodeCompleterUtils.OptionsItem options = new CodeCompleterUtils.OptionsItem(
+                        name.substring(1),
+                        comments + CodeCompleterUtils.getFileObjectInfo(editingProject, twigFile)
+                );
+                options.put("macro", macroPattern.matcher(text).find());
+
+                result.put(
+                    name.substring(1),
+                    options
+                );
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -112,25 +123,29 @@ public class IncludeEmbedExtendsCompleter implements CompletionProvider {
 
                 for (Map.Entry<String, CodeCompleterUtils.OptionsItem> option : options.entrySet()) {
                     if ((PREFIX_IMPORT + "mport " + option.getKey()).startsWith(filter)) {
-                        completionResultSet.addItem(new GeneralCompletionItem(
-                                (docText.contains(PREFIX_IMPORT + "mport " + option.getKey())),
-                                "Twig import",
-                                PREFIX_IMPORT + "mport " + option.getKey(),
-                                WRAPPER + PREFIX_IMPORT + "mport " + "\"" + option.getKey() + "\" as " + option.getKey() + " %}\r\n",
-                                option.getValue(),
-                                startOffset,
-                                caretOffset
-                        ));
+                        if (option.getValue().containsKey("macro") && true == (Boolean) option.getValue().get("macro")) {
+                            completionResultSet.addItem(new GeneralCompletionItem(
+                                    (docText.contains(PREFIX_IMPORT + "mport " + option.getKey())),
+                                    "Twig import",
+                                    PREFIX_IMPORT + "mport " + option.getKey(),
+                                    WRAPPER + PREFIX_IMPORT + "mport " + "\"" + option.getKey() + "\" as " + option.getKey().substring(option.getKey().lastIndexOf("/") + 1) + " %}\r\n",
+                                    option.getValue(),
+                                    startOffset,
+                                    caretOffset
+                            ));
+                        }
                     } else if ((PREFIX_USE + "se " + option.getKey()).startsWith(filter)) {
-                        completionResultSet.addItem(new GeneralCompletionItem(
-                                (docText.contains(PREFIX_USE + "se " + option.getKey())),
-                                "Twig use",
-                                PREFIX_USE + "se " + option.getKey(),
-                                WRAPPER + PREFIX_USE + "se " + "\"" + option.getKey() + "\" %}\r\n",
-                                option.getValue(),
-                                startOffset,
-                                caretOffset
-                        ));
+                        if (extendsPattern.matcher(docText).find()) {
+                            completionResultSet.addItem(new GeneralCompletionItem(
+                                    (docText.contains(PREFIX_USE + "se " + option.getKey())),
+                                    "Twig use",
+                                    PREFIX_USE + "se " + option.getKey(),
+                                    WRAPPER + PREFIX_USE + "se " + "\"" + option.getKey() + "\" %}\r\n",
+                                    option.getValue(),
+                                    startOffset,
+                                    caretOffset
+                            ));
+                        }
                     } else if ((PREFIX_EMBED + "mbed " + option.getKey()).startsWith(filter)) {
                         completionResultSet.addItem(new GeneralCompletionItem(
                                 (docText.contains(PREFIX_EMBED + "mbed " + option.getKey())),

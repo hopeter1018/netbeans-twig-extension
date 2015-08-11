@@ -37,7 +37,7 @@ import org.openide.util.Exceptions;
 public class IncludeEmbedHyperlinkProvider implements HyperlinkProviderExt {
 
     private int startOffset, endOffset;
-    final Pattern pattern = Pattern.compile("(?<type>embed|include|extends|import|use)(?<spaces> +)(\\\"|\\')(?<filename>[^\\\"|\\']+)(\\\"|\\')");
+    final Pattern linkToExternalTwigPattern = Pattern.compile("(?<type>embed|include|extends|import|use)(?<spaces> +)(\\\"|\\')(?<filename>[^\\\"|\\']+)(\\\"|\\')");
 
     @Override
     public Set<HyperlinkType> getSupportedHyperlinkTypes() {
@@ -62,14 +62,14 @@ public class IncludeEmbedHyperlinkProvider implements HyperlinkProviderExt {
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return "Click to open " + text;
+        return "Click to open " + text + " (by IEHP)";
     }
 
     @Override
     public void performClickAction(Document doc, int offset, HyperlinkType ht) {
         try {
             String text = doc.getText(startOffset, endOffset - startOffset);
-            FileObject fo = getFileObject(doc);
+//            FileObject fo = getFileObject(doc);
             String pathToFileToOpen = HyperlinkProviderUtils.getTwigCommonFile(text);
             if (pathToFileToOpen != null) {
                 File fileToOpen = FileUtil.normalizeFile(new File(pathToFileToOpen));
@@ -85,7 +85,7 @@ public class IncludeEmbedHyperlinkProvider implements HyperlinkProviderExt {
                     StatusDisplayer.getDefault().setStatusText(fileToOpen.getName() + " (" + pathToFileToOpen + ") doesn't exist!");
                 }
             } else {
-                StatusDisplayer.getDefault().setStatusText(text + " doesn't exist!");
+                StatusDisplayer.getDefault().setStatusText(text + " (" + pathToFileToOpen + ") doesn't exist!");
             }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -120,7 +120,7 @@ public class IncludeEmbedHyperlinkProvider implements HyperlinkProviderExt {
                 try {
                     String text = doc.getText(startOffset, endOffset - startOffset);
 
-                    Matcher matcher = pattern.matcher(text);
+                    Matcher matcher = linkToExternalTwigPattern.matcher(text);
                     if (matcher.find()) {
                         int offsetPrefix = matcher.group("type").length() + matcher.group("spaces").length() + 1;
                         startOffset = startOffset + offsetPrefix;

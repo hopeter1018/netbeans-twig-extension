@@ -27,10 +27,9 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.twigplugin.Utils.CodeCompleterUtils;
-import org.netbeans.modules.php.twigplugin.Utils.FileSystemUtils;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.php.twigplugin.Utils.CommonConstants;
-import org.netbeans.modules.php.twigplugin.Utils.ProjectUtils;
+import org.netbeans.modules.php.twigplugin.Utils.MyProjectUtils;
 
 /**
  *
@@ -45,13 +44,10 @@ public class SimpleFilterCompleter implements CompletionProvider {
     final static Pattern twigSimpleFilterPattern = Pattern.compile("new Twig_SimpleFilter\\("
                         + "[\'\"](?<name>[^\'\"]+)[\'\"]"
                         + "[^\'\"]*"
-                        + "([\'\"](?<string1>[^\'\"]+)[\'\"])"
-                        + "[^\'\"]*"
-                        + "\\)");
+                        + "[\'\"](?<string1>[^\'\"]+)");
+
     public static Map<String, CodeCompleterUtils.OptionsItem> getAllTwigSimpleFilter(Project editingProject) {
-        FileObject editingDir = editingProject.getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir());
-        //  .getFileObject("");
-        List<FileObject> phpFiles = FileSystemUtils.findByMimeType(editingDir, CommonConstants.NB_MIME_PHP);
+        List<FileObject> phpFiles = TwigCache.getPhp();
         Map<String, CodeCompleterUtils.OptionsItem> result = new HashMap<String, CodeCompleterUtils.OptionsItem>();
 
         for (FileObject phpFile : phpFiles) {
@@ -75,6 +71,7 @@ public class SimpleFilterCompleter implements CompletionProvider {
                 Exceptions.printStackTrace(ex);
             }
         }
+
         return result;
     }
 

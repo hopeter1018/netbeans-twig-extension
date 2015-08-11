@@ -18,7 +18,7 @@ import org.openide.util.Exceptions;
  *
  * @author peter.ho
  */
-public class ProjectUtils {
+public class MyProjectUtils {
     
     protected static String getComposerJsonProperty(String... propertyNames)
     {
@@ -77,12 +77,25 @@ public class ProjectUtils {
     public static List<FileObject> getEditingPaths(Project editingProject)
     {
         List<FileObject> result = new ArrayList();
-        result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getProjectWorkbenchDir()));
-        if (editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorMyDir()) != null) {
-            result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorMyDir()));
+        result.add(editingProject.getProjectDirectory().getFileObject(MyProjectUtils.getProjectWorkbenchDir()));
+        if (editingProject.getProjectDirectory().getFileObject(MyProjectUtils.getVendorMyDir()) != null) {
+            result.add(editingProject.getProjectDirectory().getFileObject(MyProjectUtils.getVendorMyDir()));
         }
-        if (editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorZmsDir()) != null) {
-            result.add(editingProject.getProjectDirectory().getFileObject(ProjectUtils.getVendorZmsDir()));
+        if (editingProject.getProjectDirectory().getFileObject(MyProjectUtils.getVendorZmsDir()) != null) {
+            result.add(editingProject.getProjectDirectory().getFileObject(MyProjectUtils.getVendorZmsDir()));
+        }
+        return result;
+    }
+
+    public static String getRelative(Project editingProject, String path)
+    {
+        List<FileObject> paths = getEditingPaths(editingProject);
+        String result = path;
+        for (FileObject fo : paths) {
+            if (path.contains(fo.getPath())) {
+                result = path.substring(fo.getPath().length());
+                break;
+            }
         }
         return result;
     }

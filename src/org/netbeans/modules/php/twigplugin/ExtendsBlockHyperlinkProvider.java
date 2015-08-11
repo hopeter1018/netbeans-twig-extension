@@ -41,7 +41,7 @@ public class ExtendsBlockHyperlinkProvider implements HyperlinkProviderExt {
 
     private int startOffset, endOffset;
     private String blockName;
-    final static Pattern blockPattern = Pattern.compile("(?<type>(end)block)(?<spaces> +)(?<blockname>.*)");
+    final static Pattern blockPattern = Pattern.compile("(?<type>(end)*block)(?<spaces> +)(?<blockname>.*)");
     final static Pattern extendsNamePattern = Pattern.compile("\\{%( +)extends( +)\\\"(?<extendsname>[^\\\"]+)\\\"( +)%\\}");
 
     @Override
@@ -61,13 +61,15 @@ public class ExtendsBlockHyperlinkProvider implements HyperlinkProviderExt {
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
+        String extendsPage = null;
         String text = null;
         try {
+            extendsPage = getExtendsName(doc);
             text = doc.getText(startOffset, endOffset - startOffset);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return "Click to open " + text;
+        return "Click to open the block [" + text + "] in extends page [" + extendsPage + "] (by EBHP)";
     }
 
     @Override
@@ -111,7 +113,7 @@ public class ExtendsBlockHyperlinkProvider implements HyperlinkProviderExt {
         String text = doc.getText(0, doc.getLength());
         Matcher matcher = extendsNamePattern.matcher(text);
         while(matcher.find()) {
-            System.out.println("matcher.find !");
+//            System.out.println("matcher.find !");
             return matcher.group("extendsname");
         }
         return null;
